@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>c r a b</title>
+    <link rel="icon" href="https://assets.tickles.store/r2/tab-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(0, 0, 0, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-highlight: rgba(255, 255, 255, 0.02);
+            --primary-text: #ffffff;
+            --muted-text: rgba(255, 255, 255, 0.5);
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --glow-color: rgba(255, 255, 255, 0.03);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            background-color: #000000;
+            color: var(--primary-text);
+            overflow: hidden;
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            z-index: 1000;
+            cursor: pointer;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #loading-text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+
+        #loading-screen p {
+            margin-top: 30px;
+            font-size: 16px;
+            letter-spacing: 4px;
+            opacity: 0.6;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Main Content */
+        #content {
+            display: none;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Background Animation */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://assets.tickles.store/r2/wallpaper.png') no-repeat center center;
+            background-size: cover;
+            z-index: -2;
+            opacity: 0.3;
+        }
+
+        /* Background Overlay */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: -1;
+        }
+
+        /* Profile Container */
+        .profile-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 860px;
+            height: 540px;
+            background-color: var(--glass-bg);
+            border-radius: 28px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.7), 
+                0 0 0 1px var(--glass-border),
+                0 0 100px var(--glow-color);
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Banner */
+        .banner {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            position: relative;
+            background-color: #000;
+        }
+
+        .banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1);
+            transition: transform 10s ease;
+            opacity: 0.7;
+        }
+
+        .profile-container:hover .banner img {
+            transform: scale(1.05);
+        }
+
+        .banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+
+        /* Content Area */
+        .profile-content {
+            width: 100%;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas: 
+                "profile badges"
+                "profile bio"
+                "discord telegram";
+            position: relative;
+            padding: 29px;
+            gap: 0px;
+        }
+
+        /* Profile Picture */
+        .profile-pic-container {
+            grid-area: profile;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: -90px;
+        }
+
+        .profile-pic {
+            width: 180px;
+            height: 180px;
+            border-radius: 1000px;
+            border: 0px solid var(--primary-text);
+            overflow: hidden;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 0 20px var(--glow-color);
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: #000;
+        }
+
+        .profile-pic:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.6),
+                0 0 30px var(--glow-color);
+        }
+
+        .profile-pic::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.0), transparent);
+            z-index: 1;
+        }
+
+        .profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            opacity: 0.9;
+        }
+
+        .profile-pic:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Username */
+        .username {
+            font-size: 2.4rem;
+            margin: 25px 0 10px;
+            color: var(--primary-text);
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        /* Badges */
+        .badges-container {
+            grid-area: badges;
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 25px;
+            padding-top: 10px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 15px;
+        }
+
+        .badge {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            opacity: 0;
+            background: rgba(255, 255, 255, 0.05);
+            transition: opacity 0.3s ease;
+        }
+
+        .badge:hover {
+            transform: translateY(-5px);
+        }
+
+        .badge:hover::before {
+            opacity: 1;
+        }
+
+        .badge i {
+            font-size: 20px;
+            color: var(--primary-text);
+            position: relative;
+            z-index: 2;
+            opacity: 0.8;
+        }
+
+        /* Bio */
+        .bio {
+            grid-area: bio;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            min-height: 40px;
+            color: var(--primary-text);
+            font-weight: 400;
+            position: relative;
+            padding: 20px 30px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            opacity: 0.9;
+        }
+
+        .bio::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Socials */
+        .discord-container {
+            grid-area: discord;
+            justify-self: start;
+            align-self: end;
+        }
+
+        .telegram-container {
+            grid-area: telegram;
+            justify-self: end;
+            align-self: end;
+        }
+
+        .social-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .social-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .social-icon:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .social-icon:hover::before {
+            opacity: 1;
+        }
+
+        .social-icon img {
+            width: 26px;
+            height: 26px;
+            filter: brightness(0.9);
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1;
+            opacity: 0.8;
+        }
+
+        .social-icon:hover img {
+            transform: scale(1.2);
+        }
+
+        .social-icon.discord:hover {
+            box-shadow: 0 15px 30px rgba(88, 101, 242, 0.1);
+        }
+
+        .social-icon.telegram:hover {
+            box-shadow: 0 15px 30px rgba(0, 136, 204, 0.1);
+        }
+
+        /* Snow Effect */
+        .snowflake {
+            position: absolute;
+            color: #fff;
+            font-size: 1em;
+            user-select: none;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* Copy Notification */
+        .copy-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 15px 25px;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 50px;
+            display: none;
+            z-index: 1000;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+        }
+
+        .copy-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .copy-notification i {
+            color: #00FF9D;
+        }
+
+        /* White Glare */
+        .white-glare {
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 250%;
+            height: 250%;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(-45deg);
+            pointer-events: none;
+            z-index: 0;
+            animation: rotateGlare 15s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes rotateGlare {
+            0% { transform: rotate(-45deg); }
+            100% { transform: rotate(315deg); }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div id="loading-text">
+            <span>click to enter</span>
+        </div>
+        <p></p>
+    </div>
+
+    <!-- Main Content -->
+    <div id="content">
+        <!-- Dynamic Background -->
+        <div class="background"></div>
+        <div class="bg-overlay"></div>
+
+        <!-- Profile Container -->
+        <div class="profile-container">
+            <!-- White Glare Effect -->
+            <div class="white-glare"></div>
+            
+            <!-- Banner -->
+            <div class="banner">
+                <img src="https://assets.tickles.store/r2/banner.png" alt="Profile Banner">
+                <div class="banner-overlay"></div>
+            </div>
+
+            <div class="profile-content">
+                <!-- Profile Picture & Username -->
+                <div class="profile-pic-container">
+                    <div class="profile-pic">
+                        <img src="https://assets.tickles.store/r2/pfp.png" alt="Profile Picture">
+                    </div>
+                    <h1 class="username">c r a b</h1>
+                </div>
+
+                <!-- Badges with Icons -->
+                <div class="badges-container">
+                    <div class="badges">
+                        <div class="badge" title="VIP">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="badge" title="Owner">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <div class="badge" title="Developer">
+                            <i class="fas fa-code"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bio with Typewriter Effect -->
+                <div class="bio" id="bio-text"></div>
+
+                <!-- Social Media Icons -->
+                <div class="discord-container">
+                    <div class="social-icon discord" id="discord-icon">
+                        <img src="https://assets.tickles.store/r2/discord.png" alt="Discord">
+                    </div>
+                </div>
+                
+                <div class="telegram-container">
+                    <div class="social-icon telegram" id="telegram-icon">
+                        <img src="https://assets.tickles.store/r2/telegram.png" alt="Telegram">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copy Notification -->
+    <div class="copy-notification" id="copy-notification">
+        <i class="fas fa-check-circle"></i>
+        Discord username copied!
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="background-music" loop>
+        <source src="https://assets.tickles.store/r2/music.mp3" type="audio/mp3">
+    </audio>
+
+    <script>
+        // Loading Screen
+        document.getElementById('loading-screen').addEventListener('click', function() {
+            this.style.opacity = '0';
+            setTimeout(() => {
+                this.style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                document.getElementById('background-music').play().catch(e => {
+                    console.log("Auto-play prevented: ", e);
+                });
+                startSnowEffect();
+                startTypingEffect();
+            }, 500);
+        });
+
+        // Typewriter Effect for Bio
+        const bioText = document.getElementById('bio-text');
+        const bioOptions = [
+            "crab",
+            "fuck antiextortion",
+            "ima ar-15 your ass",
+            "764",
+            "startfleet",
+            "fine shyt",
+            "hey shawty"
+        ];
+        let currentBioIndex = 0;
+        let isDeleting = false;
+        let txt = '';
+        let typeSpeed = 100;
+
+        function startTypingEffect() {
+            const current = currentBioIndex % bioOptions.length;
+            const fullText = bioOptions[current];
+
+            if (isDeleting) {
+                txt = fullText.substring(0, txt.length - 1);
+            } else {
+                txt = fullText.substring(0, txt.length + 1);
+            }
+
+            bioText.innerHTML = txt;
+
+            let delta = 150 - Math.random() * 50;
+
+            if (isDeleting) { delta /= 2; }
+
+            if (!isDeleting && txt === fullText) {
+                isDeleting = true;
+                delta = 1500;
+            } else if (isDeleting && txt === '') {
+                isDeleting = false;
+                currentBioIndex++;
+                delta = 800;
+            }
+
+            setTimeout(startTypingEffect, delta);
+        }
+
+        // Snow Effect
+        function startSnowEffect() {
+            const snowflakesCount = 60;
+            const container = document.body;
+            const snowflakes = ['❄', '❅', '❆'];
+            
+            for (let i = 0; i < snowflakesCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+                snowflake.style.left = Math.random() * 100 + 'vw';
+                snowflake.style.opacity = Math.random() * 0.5 + 0.1;
+                snowflake.style.fontSize = Math.random() * 12 + 5 + 'px';
+                
+                container.appendChild(snowflake);
+                
+                // Animation
+                animateSnowflake(snowflake);
+            }
+        }
+
+        function animateSnowflake(snowflake) {
+            let posX = parseFloat(snowflake.style.left);
+            let posY = -30; // Start above the screen
+            const speed = Math.random() * 1.5 + 0.5;
+            const horizontalMovement = Math.random() * 2 - 1; // Random horizontal movement
+            const wobbleFrequency = Math.random() * 0.03;
+            const wobbleAmplitude = Math.random() * 3;
+            let angle = 0;
+
+            function updatePosition() {
+                posY += speed;
+                posX += horizontalMovement + Math.sin(angle) * wobbleAmplitude;
+                angle += wobbleFrequency;
+                
+                snowflake.style.top = posY + 'px';
+                snowflake.style.left = posX + 'vw';
+                
+                if (posY < window.innerHeight) {
+                    requestAnimationFrame(updatePosition);
+                } else {
+                    // Reset the snowflake
+                    posY = -30;
+                    posX = Math.random() * 100;
+                    snowflake.style.left = posX + 'vw';
+                    requestAnimationFrame(updatePosition);
+                }
+            }
+            
+            requestAnimationFrame(updatePosition);
+        }
+
+        // Social Media Functionality
+        document.getElementById('discord-icon').addEventListener('click', function() {
+            navigator.clipboard.writeText('reincarnatedcrab').then(function() {
+                const notification = document.getElementById('copy-notification');
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
+            });
+        });
+
+        document.getElementById('telegram-icon').addEventListener('click', function() {
+            window.open('https://t.me/reincarnatedcrab', '_blank');
+        });
+    </script>
+</body>
+</html>
